@@ -14,9 +14,15 @@ function App() {
         <Route path="/" element={<Login />} />
          <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/home" element={<ProtectRoutes><Home /></ProtectRoutes>} />
-        <Route path="/create-poll" element={<CreatePoll />} />
-        <Route path="/create-survey" element={<CreateSurvey />} />
+        <Route path="/home" element={<ProtectRoutes>
+      <Home />
+    </ProtectRoutes>} />
+        <Route path="/create-poll" element={ <ProtectRoutes>
+      <CreatePoll />
+    </ProtectRoutes>} />
+        <Route path="/create-survey" element={<ProtectRoutes>
+      <CreateSurvey />
+    </ProtectRoutes>} />
         <Route path="/survey/:id" element={<SurveyPage />} />
       </Routes>
     </BrowserRouter>
