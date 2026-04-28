@@ -1,53 +1,57 @@
-
 const Survey = require("../models/surveyModel");
 
-// CREATE SURVEY
+// CREATE SURVEY (with direct questions)
 exports.createSurvey = async (req, res) => {
-  try {
-    const { title, category, questions } = req.body;
+    try {
+        const { title, category, questions } = req.body;
 
-    const survey = await Survey.create({
-      title,
-      category,
-      questions,
-      createdBy: req.user.id
-    });
+        if (!title || !category || !questions || questions.length === 0) {
+            return res.status(400).json({ msg: "All fields are required" });
+        }
 
-    res.json(survey);
+        const survey = await Survey.create({
+            title,
+            category,
+            questions, // 🔥 now direct objects
+            createdBy: req.user.id
+        });
 
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-};
+        res.json(survey);
 
-// GET SURVEY BY ID
-exports.getSurvey = async (req, res) => {
-  try {
-    const survey = await Survey.findById(req.params.id)
-      .populate("questions");
-
-    if (!survey) {
-      return res.status(404).json({ msg: "Survey not found" });
+    } catch (err) {
+        res.status(500).json({ msg: err.message });
     }
-
-    res.json(survey);
-
+};
+// GET ALL SURVEYS
+exports.getAllSurveys = async (req, res) => {
+  try {
+    const surveys = await Survey.find();
+    res.json(surveys);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
 };
+// GET SURVEY
+exports.getSurvey = async (req, res) => {
+    try {
+        const survey = await Survey.findById(req.params.id);
 
+        if (!survey) {
+            return res.status(404).json({ msg: "Survey not found" });
+        }
 
-// GET SURVEYS BY CATEGORY (TYPE)
+        res.json(survey);
+
+    } catch (err) {
+        res.status(500).json({ msg: err.message });
+    }
+};
+
+// GET BY CATEGORY
 exports.getSurveyByCategory = async (req, res) => {
     try {
-        const { type } = req.params;
-
-        const surveys = await Survey.find({ category: type })
-            .populate("questions");
-
+        const surveys = await Survey.find({ category: req.params.type });
         res.json(surveys);
-
     } catch (err) {
         res.status(500).json({ msg: err.message });
     }

@@ -31,7 +31,7 @@
 const router = require("express").Router();
 const auth = require("../middleware/authMiddleware");
 const passport = require("passport");
-const jwt = require("jsonwebtoken"); // ✅ ADD THIS
+const jwt = require("jsonwebtoken");
 
 const {
   register,
@@ -43,38 +43,40 @@ const {
 // 🔹 AUTH ROUTES
 router.post("/register", register);
 router.post("/login", login);
+
+// ✅ ONLY THIS VERIFY (JWT based)
 router.get("/verify", auth, verify);
-router.get("/logout", logout);
 
 // 🔹 GOOGLE AUTH
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "consent",   // 🔥 forces Google screen
+    accessType: "offline"
+  })
 );
 
 router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "http://localhost:3000/login",
-    session: true,
+    session: false, // 🔥 IMPORTANT: disable session
   }),
   (req, res) => {
     try {
-      // ✅ Create JWT from logged-in user
       const token = jwt.sign(
         { id: req.user._id },
         process.env.JWT_SECRET || "secret",
         { expiresIn: "7d" }
       );
 
-      // ✅ Send token in cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false, // true in production (HTTPS)
+        secure: false,
         sameSite: "lax",
       });
 
-      // ✅ Redirect to frontend
       res.redirect("http://localhost:3000/home");
     } catch (err) {
       console.log(err);

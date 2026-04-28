@@ -1,18 +1,20 @@
 const Poll = require("../models/pollModel");
+const Survey = require("../models/surveyModel");
 const Response = require("../models/responseModel");
 
+
+// ✅ POLL VOTE (your improved version)
 exports.vote = async (req, res) => {
     try {
         const { pollId, optionIndex } = req.body;
 
-        // check poll exists
         const poll = await Poll.findById(pollId);
         if (!poll) {
             return res.status(404).json({ msg: "Poll not found" });
         }
 
-        // check option index
-        if (optionIndex >= poll.options.length) {
+        // 🔥 better validation
+        if (optionIndex < 0 || optionIndex >= poll.options.length) {
             return res.status(400).json({ msg: "Invalid option" });
         }
 
@@ -26,11 +28,11 @@ exports.vote = async (req, res) => {
             return res.status(400).json({ msg: "You already voted" });
         }
 
-        // increase vote
+        // 🔥 update vote
         poll.options[optionIndex].votes++;
         await poll.save();
 
-        // save response
+        // 🔥 save response
         await Response.create({
             poll: pollId,
             user: req.user.id,
@@ -38,6 +40,58 @@ exports.vote = async (req, res) => {
         });
 
         res.json({ msg: "Vote recorded successfully", poll });
+
+    } catch (err) {
+        res.status(500).json({ msg: err.message });
+    }
+};
+
+
+
+// ✅ SURVEY SUBMIT (NEW)
+exports.submitSurvey = async (req, res) => {
+    try {
+        const { surveyId, answers } = req.body;
+
+        const survey = await Survey.findById(surveyId);
+        if (!survey) {
+            return res.status(404).json({ msg: "Survey not found" });
+        }
+
+        // ❌ already submitted
+        const existing = await Response.findOne({
+            survey: surveyId,
+            user: req.user.id
+        });
+
+        if (existing) {
+            return res.status(400).json({ msg: "Already submitted" });
+        }
+
+        // 🔥 validate answers
+        if (!answers || answers.length !== survey.questions.length) {
+            return res.status(400).json({ msg: "Invalid answers" });
+        }
+
+        // 🔥 update votes
+        answers.forEach(ans => {
+            const q = survey.questions[ans.questionIndex];
+
+            if (q && q.options[ans.selectedOption]) {
+                q.options[ans.selectedOption].votes++;
+            }
+        });
+
+        await survey.save();
+
+        // 🔥 save response
+        await Response.create({
+            survey: surveyId,
+            user: req.user.id,
+            aanswers[]
+        });
+
+        res.json({ msg: "Survey submitted successfully" });
 
     } catch (err) {
         res.status(500).json({ msg: err.message });

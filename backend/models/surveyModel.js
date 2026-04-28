@@ -6,7 +6,6 @@ const surveySchema = new mongoose.Schema({
     required: true
   },
 
-  // keep it flexible (no enum)
   category: {
     type: String,
     required: true
@@ -14,9 +13,22 @@ const surveySchema = new mongoose.Schema({
 
   questions: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Question",
-      required: true
+      questionText: {
+        type: String,
+        required: true
+      },
+      options: [
+        {
+          text: {
+            type: String,
+            required: true
+          },
+          votes: {
+            type: Number,
+            default: 0
+          }
+        }
+      ]
     }
   ],
 

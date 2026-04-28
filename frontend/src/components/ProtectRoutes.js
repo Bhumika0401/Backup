@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API } from "../api/api";
 
@@ -21,13 +21,13 @@ export default function ProtectRoutes({ children }) {
     check();
   }, []);
 
-  // useEffect(() => {
-  //   if (!loading && !auth) {
-  //     nav("/home"); // redirect to login
-  //   }
-  // }, [loading, auth, nav]);
+  useEffect(() => {
+    if (!loading && !auth) {
+      nav("/login"); // ✅ FIXED
+    }
+  }, [loading, auth, nav]);
 
   if (loading) return <h3>Loading...</h3>;
 
- return auth ? children : <Navigate to="/login" />;
+  return auth ? children : <Navigate to="/login" />;
 }
